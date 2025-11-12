@@ -78,7 +78,7 @@ class PluginTemplate(PluginBase):
         change_text = ActionHolder(
             plugin_base=self,
             action_base=ChangeTextChannel,
-            action_id="com_imdevinc_StreamControllerDiscordPlugin::ChangeTextChannel",
+            action_id="net_pniedzielski_StreamControllerDiscordPlugin::ChangeTextChannel",
             action_name="Change Text Channel",
             action_support={
                 Input.Key: ActionInputSupport.SUPPORTED,
@@ -91,7 +91,7 @@ class PluginTemplate(PluginBase):
         change_voice = ActionHolder(
             plugin_base=self,
             action_base=ChangeVoiceChannel,
-            action_id="com_imdevinc_StreamControllerDiscordPlugin::ChangeVoiceChannel",
+            action_id="net_pniedzielski_StreamControllerDiscordPlugin::ChangeVoiceChannel",
             action_name="Change Voice Channel",
             action_support={
                 Input.Key: ActionInputSupport.SUPPORTED,
@@ -104,7 +104,7 @@ class PluginTemplate(PluginBase):
         deafen = ActionHolder(
             plugin_base=self,
             action_base=Deafen,
-            action_id="com_imdevinc_StreamControllerDiscordPlugin::Deafen",
+            action_id="net_pniedzielski_StreamControllerDiscordPlugin::Deafen",
             action_name="Toggle Deafen",
             action_support={
                 Input.Key: ActionInputSupport.SUPPORTED,
@@ -117,7 +117,7 @@ class PluginTemplate(PluginBase):
         mute = ActionHolder(
             plugin_base=self,
             action_base=Mute,
-            action_id="com_imdevinc_StreamControllerDiscordPlugin::Mute",
+            action_id="net_pniedzielski_StreamControllerDiscordPlugin::Mute",
             action_name="Toggle Mute",
             action_support={
                 Input.Key: ActionInputSupport.SUPPORTED,
@@ -130,7 +130,7 @@ class PluginTemplate(PluginBase):
         toggle_ptt = ActionHolder(
             plugin_base=self,
             action_base=TogglePTT,
-            action_id="com_imdevinc_StreamControllerDiscordPlugin::Push_To_Talk",
+            action_id="net_pniedzielski_StreamControllerDiscordPlugin::Push_To_Talk",
             action_name="Toggle PTT",
             action_support={
                 Input.Key: ActionInputSupport.SUPPORTED,

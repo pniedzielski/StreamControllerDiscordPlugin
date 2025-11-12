@@ -1,7 +1,7 @@
 {
   "version": "1.7.0",
   "thumbnail": "store/thumbnail.png",
-  "id": "com_imdevinc_StreamControllerDiscordPlugin",
+  "id": "net_pniedzielski_StreamControllerDiscordPlugin",
   "name": "Discord",
   "author": "ImDevinC",
   "github": "https://github.com/ImDevinC/StreamControllerDiscordPlugin",
