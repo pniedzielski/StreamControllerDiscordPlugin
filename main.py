@@ -21,6 +21,7 @@ from .actions.ChangeVoiceChannel import ChangeVoiceChannel
 from .actions.ChangeTextChannel import ChangeTextChannel
 from .actions.TogglePTT import TogglePTT
 from .actions.UserVolume import UserVolume
+from .actions.AutoPan import AutoPan
 
 # Import event IDs
 from .discordrpc.commands import VOICE_CHANNEL_SELECT, VOICE_SETTINGS_UPDATE, GET_CHANNEL
@@ -187,6 +188,19 @@ class PluginTemplate(PluginBase):
             },
         )
         self.add_action_holder(user_volume)
+
+        auto_pan = ActionHolder(
+            plugin_base=self,
+            action_base=AutoPan,
+            action_id="com_imdevinc_StreamControllerDiscordPlugin::AutoPan",
+            action_name="Auto Pan",
+            action_support={
+                Input.Key: ActionInputSupport.SUPPORTED,
+                Input.Dial: ActionInputSupport.UNTESTED,
+                Input.Touchscreen: ActionInputSupport.UNTESTED,
+            },
+        )
+        self.add_action_holder(auto_pan)
 
     def setup_backend(self):
         if self.backend and self.backend.is_authed():

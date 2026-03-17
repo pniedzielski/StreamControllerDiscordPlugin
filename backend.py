@@ -1,10 +1,12 @@
 import json
+import math
 
 from streamcontroller_plugin_tools import BackendBase
 
 from loguru import logger as log
 
 from discordrpc import AsyncDiscord, commands
+from autopan import AutopanMode
 
 
 class Backend(BackendBase):
@@ -20,6 +22,7 @@ class Backend(BackendBase):
         self._is_reconnecting: bool = False
         self._voice_channel_users: dict = {}  # {user_id: {username, nick, volume, muted, panning}}
         self._current_user_id: str = None  # Current user's ID (for filtering)
+        self._autopan_mode: int = AutopanMode.OFF
 
     def discord_callback(self, code, event):
         if code == 0:
@@ -250,6 +253,57 @@ class Backend(BackendBase):
     def get_voice_channel_users(self) -> dict:
         """Get a copy of the current voice channel users."""
         return self._voice_channel_users.copy()
+
+    # Autopan methods
+
+    def get_autopan_mode(self) -> int:
+        """Get the current autopan mode."""
+        return self._autopan_mode
+
+    def set_autopan_mode(self, mode: int):
+        """Set the autopan mode."""
+        self._autopan_mode = mode
+
+    def is_autopan_enabled(self) -> bool:
+        """Check if autopan is currently enabled (any mode other than OFF)."""
+        return self._autopan_mode != AutopanMode.OFF
+
+    def apply_autopan(self):
+        """Apply autopan distribution based on current mode."""
+        if self._autopan_mode == AutopanMode.OFF:
+            return
+        self._apply_autopan_default()
+
+    def _apply_autopan_default(self):
+        """Distribute all users across the stereo field using spring model.
+
+        Uses N+2 positions with "dummy users" at extremes, so real users
+        occupy positions 1 through N. Formula: balance[i] = (i + 1) / (N + 1).
+        This leaves margins at extremes that scale with user count.
+        """
+        if not self._ensure_connected():
+            log.warning("Discord client not connected, cannot apply autopan")
+            return
+
+        user_ids = list(self._voice_channel_users.keys())
+        n = len(user_ids)
+
+        if n == 0:
+            return
+
+        for i, user_id in enumerate(user_ids):
+            balance = (i + 1) / (n + 1)
+            left, right = self.balance_to_panning(balance)
+            self.set_user_panning(user_id, left, right)
+
+    def recenter_all_users(self):
+        """Reset all users to mono (left: 1.0, right: 1.0)."""
+        if not self._ensure_connected():
+            log.warning("Discord client not connected, cannot recenter users")
+            return
+
+        for user_id in self._voice_channel_users:
+            self.set_user_panning(user_id, 1.0, 1.0)
 
     def get_channel(self, channel_id: str) -> bool:
         """Fetch channel information including voice states."""

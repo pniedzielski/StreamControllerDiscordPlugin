@@ -20,6 +20,7 @@
 - **ChangeTextChannel** - Navigate to a specific text channel by ID
 - **ChangeVoiceChannel** - Join or leave a specific voice channel by ID
 - **UserVolume** - Control per-user volume levels via dial (rotate to adjust volume, press to cycle users)
+- **AutoPan** - Automatically position users across the stereo panorama (short press to toggle Auto mode, long press to reset to mono).
 
 ## Flatpak
 If you are using the Flatpak version of Discord, Discord may not properly setup
