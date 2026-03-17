@@ -18,7 +18,7 @@ class Backend(BackendBase):
         self._is_authed: bool = False
         self._current_voice_channel: str = None
         self._is_reconnecting: bool = False
-        self._voice_channel_users: dict = {}  # {user_id: {username, nick, volume, muted}}
+        self._voice_channel_users: dict = {}  # {user_id: {username, nick, volume, muted, panning}}
         self._current_user_id: str = None  # Current user's ID (for filtering)
 
     def discord_callback(self, code, event):
@@ -213,14 +213,30 @@ class Backend(BackendBase):
             self._voice_channel_users[user_id]["muted"] = muted
         return True
 
+    def set_user_panning(self, user_id: str, left: float, right: float) -> bool:
+        """Set panning for a specific user (0.0-1.0 for each channel)."""
+        if not self._ensure_connected():
+            log.warning("Discord client not connected, cannot set user panning")
+            return False
+        left = max(0.0, min(1.0, left))
+        right = max(0.0, min(1.0, right))
+        self.discord_client.set_user_voice_settings(user_id, left=left, right=right)
+        if user_id in self._voice_channel_users:
+            self._voice_channel_users[user_id]["panning"] = {"left": left, "right": right}
+        return True
+
     def update_voice_channel_user(self, user_id: str, username: str, nick: str = None,
-                                   volume: int = 100, muted: bool = False):
+                                   volume: int = 100, muted: bool = False,
+                                   left: float = 1.0, right: float = 1.0):
         """Track a user in the current voice channel."""
+        left = max(0.0, min(1.0, left))
+        right = max(0.0, min(1.0, right))
         self._voice_channel_users[user_id] = {
             "username": username,
             "nick": nick,
             "volume": volume,
-            "muted": muted
+            "muted": muted,
+            "panning": {"left": left, "right": right}
         }
 
     def remove_voice_channel_user(self, user_id: str):
@@ -273,5 +289,20 @@ class Backend(BackendBase):
             self.discord_client = None
         self._is_authed = False
 
+    @staticmethod
+    def balance_to_panning(balance: float) -> tuple[float, float]:
+        """Convert balance (0.0-1.0) to constant-power panning."""
+        angle = balance * (math.pi / 2)
+        return math.cos(angle), math.sin(angle)
+
+    @staticmethod
+    def panning_to_balance(left: float, right: float) -> float:
+        """Convert panning back to balance (0.0-1.0).
+
+        Note: For Discord's default mono (1.0, 1.0), this returns 0.5,
+        which is acceptable for display purposes but round-trips to
+        (0.707, 0.707), not the original mono state.
+        """
+        return math.atan2(right, left) / (math.pi / 2)
 
 backend = Backend()
