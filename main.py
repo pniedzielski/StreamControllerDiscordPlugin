@@ -22,6 +22,7 @@ from .actions.ChangeTextChannel import ChangeTextChannel
 from .actions.TogglePTT import TogglePTT
 from .actions.UserVolume import UserVolume
 from .actions.AutoPan import AutoPan
+from .actions.UserPanning import UserPanning
 
 # Import event IDs
 from .discordrpc.commands import VOICE_CHANNEL_SELECT, VOICE_SETTINGS_UPDATE, GET_CHANNEL
@@ -201,6 +202,19 @@ class PluginTemplate(PluginBase):
             },
         )
         self.add_action_holder(auto_pan)
+
+        user_panning = ActionHolder(
+            plugin_base=self,
+            action_base=UserPanning,
+            action_id="com_imdevinc_StreamControllerDiscordPlugin::UserPanning",
+            action_name="User Panning",
+            action_support={
+                Input.Key: ActionInputSupport.SUPPORTED,
+                Input.Dial: ActionInputSupport.SUPPORTED,
+                Input.Touchscreen: ActionInputSupport.UNTESTED,
+            },
+        )
+        self.add_action_holder(user_panning)
 
     def setup_backend(self):
         if self.backend and self.backend.is_authed():
