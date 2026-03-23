@@ -24,16 +24,20 @@ class AutoPan(DiscordCore):
     """Action for automatic user panning distribution.
 
     Key behavior:
-    - Short Press: Cycle through autopan modes (Off -> Auto -> Off)
+    - Short Press: Cycle through autopan modes (Off -> Auto -> Wide -> Off)
     - Hold: Recenter all users to mono (left: 1.0, right: 1.0)
 
     In Auto mode, users are distributed across the stereo field using a
     spring model that leaves margins at the extremes. When users join or
     leave, the distribution is recalculated and reapplied.
 
+    In Wide mode, users are distributed across the full stereo field without
+    margins, with the first user at extreme left and the last at extreme right.
+    Useful for recording scenarios where stereo separation is desired.
+
     Display:
     - Top label: Channel name (or "Not in voice")
-    - Center label: Current mode ("Auto" or "Autopan off")
+    - Center label: Current mode ("Auto", "Wide", or "Autopan off")
     - Bottom label: User count
     """
 
@@ -88,6 +92,8 @@ class AutoPan(DiscordCore):
             current_mode = self.backend.get_autopan_mode()
             if current_mode == AutopanMode.OFF:
                 new_mode = AutopanMode.DEFAULT
+            elif current_mode == AutopanMode.DEFAULT:
+                new_mode = AutopanMode.WIDE
             else:
                 new_mode = AutopanMode.OFF
 
@@ -230,6 +236,8 @@ class AutoPan(DiscordCore):
 
         if mode == AutopanMode.DEFAULT:
             self.set_center_label("Auto")
+        elif mode == AutopanMode.WIDE:
+            self.set_center_label("Wide")
         else:
             self.set_center_label("Autopan off")
 

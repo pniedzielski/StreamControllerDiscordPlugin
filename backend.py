@@ -272,7 +272,10 @@ class Backend(BackendBase):
         """Apply autopan distribution based on current mode."""
         if self._autopan_mode == AutopanMode.OFF:
             return
-        self._apply_autopan_default()
+        elif self._autopan_mode == AutopanMode.DEFAULT:
+            self._apply_autopan_default()
+        elif self._autopan_mode == AutopanMode.WIDE:
+            self._apply_autopan_wide()
 
     def _apply_autopan_default(self):
         """Distribute all users across the stereo field using spring model.
@@ -293,6 +296,32 @@ class Backend(BackendBase):
 
         for i, user_id in enumerate(user_ids):
             balance = (i + 1) / (n + 1)
+            left, right = self.balance_to_panning(balance)
+            self.set_user_panning(user_id, left, right)
+
+    def _apply_autopan_wide(self):
+        """Distribute users across the full stereo field without margins.
+
+        Uses the full range from extreme left to extreme right, so the first
+        user is fully left and the last is fully right. Formula for N > 1:
+        balance[i] = i / (N - 1). For a single user, centered at 0.5.
+        Useful for recording scenarios where stereo separation is desired.
+        """
+        if not self._ensure_connected():
+            log.warning("Discord client not connected, cannot apply autopan")
+            return
+
+        user_ids = list(self._voice_channel_users.keys())
+        n = len(user_ids)
+
+        if n == 0:
+            return
+
+        for i, user_id in enumerate(user_ids):
+            if n == 1:
+                balance = 0.5
+            else:
+                balance = i / (n - 1)
             left, right = self.balance_to_panning(balance)
             self.set_user_panning(user_id, left, right)
 
