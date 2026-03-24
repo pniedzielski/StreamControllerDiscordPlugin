@@ -18,12 +18,13 @@ class UserVolume(DiscordCore):
 
     Dial behavior:
     - Rotate: Adjust volume of selected user (+/- 5% per tick)
-    - Press: Cycle to next user in voice channel
+    - Short Press: Cycle to next user in voice channel
+    - Hold: Toggle mute for current user
 
     Display:
     - Top label: Current voice channel name (or "Not in voice")
     - Center label: Username/nick
-    - Bottom label: Volume percentage
+    - Bottom label: Volume percentage (with "Muted" indicator if muted)
     """
 
     def __init__(self, *args, **kwargs):
@@ -82,8 +83,18 @@ class UserVolume(DiscordCore):
             EventAssigner(
                 id="cycle-user",
                 ui_label="cycle-user",
-                default_event=Input.Dial.Events.DOWN,
+                default_event=Input.Dial.Events.SHORT_UP,
                 callback=self._on_cycle_user,
+            )
+        )
+
+        # Dial hold: toggle mute
+        self.event_manager.add_event_assigner(
+            EventAssigner(
+                id="toggle-mute",
+                ui_label="toggle-mute",
+                default_event=Input.Dial.Events.HOLD_START,
+                callback=self._on_toggle_mute,
             )
         )
 
@@ -92,7 +103,7 @@ class UserVolume(DiscordCore):
             EventAssigner(
                 id="cycle-user-key",
                 ui_label="cycle-user-key",
-                default_event=Input.Key.Events.DOWN,
+                default_event=Input.Key.Events.SHORT_UP,
                 callback=self._on_cycle_user,
             )
         )
@@ -113,6 +124,22 @@ class UserVolume(DiscordCore):
             return
         self._current_user_index = (self._current_user_index + 1) % len(self._users)
         self._update_display()
+
+    def _on_toggle_mute(self, _):
+        """Toggle mute for current user."""
+        if not self._users or self._current_user_index >= len(self._users):
+            return
+
+        user = self._users[self._current_user_index]
+        new_muted = not user.get("muted", False)
+
+        try:
+            if self.backend.set_user_mute(user["id"], new_muted):
+                user["muted"] = new_muted
+                self._update_display()
+        except Exception as ex:
+            log.error(f"Failed to toggle user mute: {ex}")
+            self.show_error(3)
 
     def _adjust_volume(self, delta: int):
         """Adjust current user's volume by delta."""
@@ -329,12 +356,16 @@ class UserVolume(DiscordCore):
             user = self._users[self._current_user_index]
             display_name = user.get("nick") or user.get("username", "Unknown")
             volume = user.get("volume", 100)
+            muted = user.get("muted", False)
 
             # Truncate name for display
             display_name = display_name[:10] if len(display_name) > 10 else display_name
 
             self.set_center_label(display_name)
-            self.set_bottom_label(f"{volume}%")
+            if muted:
+                self.set_bottom_label("Muted")
+            else:
+                self.set_bottom_label(f"{volume}%")
         else:
             self.set_center_label("")
             self.set_bottom_label("No selection")

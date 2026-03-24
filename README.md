@@ -19,7 +19,7 @@
 - **TogglePTT** - Switch between Push-to-Talk and Voice Activity input modes
 - **ChangeTextChannel** - Navigate to a specific text channel by ID
 - **ChangeVoiceChannel** - Join or leave a specific voice channel by ID
-- **UserVolume** - Control per-user volume levels via dial (rotate to adjust volume, press to cycle users)
+- **UserVolume** - Control per-user volume levels via dial (rotate to adjust volume, short press to cycle users, hold to toggle mute).
 - **AutoPan** - Automatically position users across the stereo panorama (short press to cycle modes: Auto, Wide, Off-Center; long press to reset to mono).
 - **UserPanning** - Control per-user panning via dial (rotate to pan left/right, press to cycle users, hold to reset to mono).
 
